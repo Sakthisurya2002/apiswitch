@@ -57,6 +57,65 @@ app.get('/todos/', async (request, response) => {
       dbquery1 = `select * from todo where todo like "%${search_q}%";`
   }
   const result1 = await db.all(dbquery1)
-  console.log(result1)
   response.send(result1)
 })
+
+app.get('/todos/:todoId/', async (request, response) => {
+  const parameter2 = request.params
+  const {todoId} = parameter2
+  const dbquery2 = `select * from todo where id="${todoId}";`
+  const result2 = await db.get(dbquery2)
+  response.send(result2)
+})
+
+app.post('/todos/', async (request, response) => {
+  const body3 = request.body
+  const {id, todo, priority, status} = body3
+  const dbquery3 = `insert into todo(id,todo,priority,status)
+  values(
+    ${id},
+    "${todo}",
+    "${priority}",
+    "${status}"
+  );`
+  const result3 = await db.run(dbquery3)
+  response.send(`Todo Successfully Added`)
+})
+
+app.put('/todos/:todoId/', async (request, response) => {
+  const parameter4 = request.params
+  const {todoId} = parameter4
+  let change = ''
+  const body4 = request.body
+  switch (true) {
+    case body4.status !== undefined:
+      change = 'Status'
+      break
+
+    case body4.priority !== undefined:
+      change = 'Priority'
+      break
+
+    case body4.todo !== undefined:
+      change = 'Todo'
+      break
+  }
+  const dbselect4 = `select * from todo where id="${todoId}";`
+  const resultselect4 = await db.get(dbselect4)
+  const {
+    todo = resultselect4.todo,
+    priority = resultselect4.priority,
+    status = resultselect4.status,
+  } = body4
+  const dbquery4 = `update todo set todo="${todo}",priority="${priority}",status="${status}" where id="${todoId}";`
+  response.send(`${change} Updated`)
+})
+app.delete('/todos/:todoId/', async (request, response) => {
+  const parameter5 = request.params
+  const {todoId} = parameter5
+  const dbquery5 = `delete from todo where id="${todoId}";`
+  const result5 = await db.run(dbquery5)
+  response.send(`Todo Deleted`)
+})
+
+module.exports = app
